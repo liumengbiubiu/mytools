@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" class="ml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+	<style type="text/css">
+		*{
+			margin:0px;
+			padding:0px;
+		}
+		#box01{
+			position:relative;
+			width:400px;
+			height:300px;
+			border:1px solid pink;			
+			overflow:hidden;
+		}
+		#box02{
+			position:relative;
+			width:300px;
+			height:250px;
+			border:1px solid pink;			
+			overflow:hidden;
+		}
+		#box03{
+			position:relative;
+			width:500px;
+			height:200px;
+			border:1px solid pink;			
+			overflow:hidden;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="box01">
+		
+	
+	</div>
+	<div id="box02">
+		
+	
+	</div>
+	<div id="box03">
+		
+	
+	</div>	
+</body>
+</html>
+<script type="text/javascript" src="js/tools.js"></script>
+<script type="text/javascript">
+
+
+//类：
+//轮播图
+//按钮的大小（尺寸）   ok
+//按钮的颜色（原始和高亮） ok
+//两张图片切换的速度   ？？
+
+//方向   ok
+//切换效果（滑入滑出还是淡入淡出） 
+
+function SlideShow(obj){
+	//属性（有什么）
+	this.boxId = obj.boxId;//所在容器；
+	this.width = obj.width;
+	this.height = obj.height;
+	this.imgs = obj.imgs;//轮播图播放的图片数组
+	this.currOrd = obj.currOrd;//当前图片序号(进入的图片)；有效取值为1-4；
+	
+	this.timeSpace = obj.timeSpace;//两张图片之间的时间间隔。
+	this.incLeft = obj.incLeft;
+		
+	this.outLeft = 0;//出去图片的left
+	this.inLeft = this.width;//进来图片的left。
+	this.fadeInOutTime=null;//切换效果所使用的定时器
+	this.myTimer=null;//轮播图的定时器。
+	
+	this.direction = obj.direction;
+	
+	this.btnWidth = obj.btnWidth;
+	this.btnHeight = obj.btnHeight ;
+	this.btnColor = obj.btnColor;
+	this.btnHighColor = obj.btnHighColor;
+	
+	
+	//方法（能干什么）	
+	//
+	this.initUI = function(){
+		//1、动态创建所有的图片
+		for(let i=0;i<this.imgs.length;i++){
+			let imgDom = $create("img");
+			imgDom.src = this.imgs[i];
+			imgDom.style.cssText = "position:absolute;left:-1000px;top:0px;width:"+this.width+"px;height:"+this.height+"px;";
+			$(this.boxId).appendChild(imgDom);
+		}
+		//把第一个imgDom的left设置为0；
+		$(this.boxId).children[0].style.left = "0px";
+		
+		//2、动态创建所有的li
+		let ulDom = $create("ul");
+		ulDom.style.cssText = "position:absolute;list-style:none;bottom:20px;left:130px;";//??left需要计算；
+		$(this.boxId).appendChild(ulDom);
+
+		for(let i=0;i<this.imgs.length;i++){
+			let liDom = $create("li");
+			liDom.style.cssText = "float:left;margin-right:20px;width:"+this.btnWidth+"px;	height:"+this.btnHeight+"px;background-color:"+this.btnColor+";border-radius:50%;";
+			ulDom.appendChild(liDom);
+		}
+		ulDom.children[this.currOrd-1].style.backgroundColor = this.btnHighColor;
+		
+		let that = this;//this是轮播图
+		//给轮播图容器增加事件
+		$(this.boxId).onmouseover = function(){
+			that.stopChange();
+		}
+		//给轮播图容器增加事件
+		$(this.boxId).onmouseout = function(){
+			that.startChange();
+		};
+		
+		let lis = ulDom.children;
+		for(let i=0;i<lis.length;i++){
+			lis[i].onclick = function(){
+				that.goImg(i+1);
+			}
+		}
+	}
+	
+	//1、自动变换
+	//每个一秒钟换一张图片
+	this.startChange=function(){
+		let that = this;
+		this.myTimer = setInterval(function(){
+			that.goStep();
+		},this.timeSpace);
+	}
+
+	//改变图片的地址
+	this.goStep=function(){
+		//1、对当前图片序号进行加加
+		this.currOrd++;
+		if(this.currOrd>this.imgs.length){
+			this.currOrd=1;
+		}
+		let currOutOrd = this.currOrd-1;//currOutOrd:滑出的图片序号
+		if(currOutOrd<1){
+			currOutOrd = this.imgs.length;
+		}
+		console.log("自动播放：currOrd="+this.currOrd);
+		
+		//2、改变图片
+		//$("imgId").src="images/"+currOrd+".jpg";
+		//两张图片的移动；
+		this.moveImg(currOutOrd,this.currOrd);
+		
+		//3、改变按钮的背景颜色
+		this.changeBtnColor(this.currOrd);		
+	}
+	
+	//传入哪个序号，就把哪个序号对应的li的背景颜色变成高亮颜色
+	this.changeBtnColor=function(ord){
+		var lis = $(this.boxId).lastElementChild.children;//得到所有的li
+		for(let i=0;i<lis.length;i++){
+			lis[i].style.backgroundColor = this.btnColor;
+		}
+		lis[ord-1].style.backgroundColor = this.btnHighColor;
+	}
+
+
+	//4、两张图片的切换（滑动）
+	this.moveImg=function(outOrd,inOrd){ //假定outOrd = 1；inOrd = 2；
+		this.outLeft = 0;//出去图片的left
+		let directionH = this.direction =="左"?1:-1;	
+		this.inLeft = directionH*this.width;//进来图片的left。		
+		
+		//1、把要进入的图片放在盒子的右边	
+		$(this.boxId).children[inOrd-1].style.left = this.inLeft+"px";
+		
+		console.log("outOrd="+outOrd);
+		console.log("inOrd="+inOrd);
+		
+		//2、滑动（一共走400px，花2000毫秒走完）；
+		let that = this;
+		this.fadeInOutTime = setInterval(function(){
+											that.outLeft=that.outLeft+(-1*directionH)*that.incLeft;
+											that.inLeft=that.inLeft+(-1*directionH)*that.incLeft;											
+														
+											if(that.direction =="左"){
+												if(that.inLeft<0){
+													that.inLeft=0;			
+													//清除定时器
+													clearInterval(that.fadeInOutTime);			
+												}
+											}else if(that.direction =="右"){
+												if(that.inLeft>0){
+													that.inLeft=0;			
+													//清除定时器
+													clearInterval(that.fadeInOutTime);			
+												}							
+											}
+												
+											$(that.boxId).children[outOrd-1].style.left = that.outLeft+"px";
+											$(that.boxId).children[inOrd-1].style.left = that.inLeft+"px";		
+										},
+										 10										
+										);
+	}
+
+	//2、停止变换
+	this.stopChange=function(){
+		window.clearInterval(this.myTimer);
+	}
+
+	//3、跳转到指定图片
+	this.goImg=function(ord){	
+		let currOutOrd = this.currOrd;//当前显示的图片序号，就是要出去的图片序号；	
+		this.currOrd = ord;//把要进入序号改成指定的序号；
+		
+		this.moveImg(currOutOrd,this.currOrd);
+		
+		this.changeBtnColor(ord);		
+	}
+}
+
+//步骤
+
+//鼠标点击某个按钮（圆点），跳转到对应的图片
+window.onload = function(){	
+	let s1 = new SlideShow(
+							{
+								boxId:"box01",
+								width:400,
+								height:300,
+								imgs:["img/1.jpg","img/2.jpg","img/3.jpg","img/4.jpg"],
+								currOrd:1,
+								timeSpace:3000,
+								incLeft:2,
+								direction:"右",
+								btnWidth:30,
+								btnHeight:30,
+								btnColor:"green",
+								btnHighColor:"yellow"
+							
+							}
+						);
+	s1.initUI();
+	s1.startChange();
+	
+	let s2 = new SlideShow(
+							{
+								boxId:"box02",
+								width:300,
+								height:250,
+								imgs:["img/7.jpg","img/8.jpg","img/9.jpg"],
+								currOrd:2,
+								timeSpace:2000,
+								incLeft:2,
+								direction:"左",
+								btnWidth:10,
+								btnHeight:10,
+								btnColor:"red",
+								btnHighColor:"blue"
+							
+							}
+						);
+	s2.initUI();
+	s2.startChange();
+	
+}
+
+</script>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style type="text/css">
+     #box{
+    	position:relative;
+    	left:100px;
+        width:200px;
+        height:200px;
+        border:1px solid black;        
+    }
+    
+    #img01{
+    	position: absolute;
+    	width:200px;
+        height:200px;
+    }
+</style>
+<body>
+	<div id="box">
+        <img id="img01" src="img/1.jpg" />
+   </div>
+</body>
+</html>
+<script type="text/javascript" src="js/jquery-1.8.3.min.js" ></script>
+<script type="text/javascript">
+$(function(){
+	$("#box").mouseenter(function(){
+		$("#img01").animate({"height":"0px","top":"100px"},1000,function(){
+			$("#img01").attr("src","img/2.jpg");
+			$("#img01").animate({"height":"100%","top":"0px"},1000);			
+		});
+	});	
+	
+	$("#box").mouseleave(function(){
+		$("#img01").animate({"height":"0px","top":"100px"},1000,function(){
+			$("#img01").attr("src","img/1.jpg");
+			$("#img01").animate({"height":"100%","top":"0px"},1000);			
+		});
+	});	
+});
+
+
+
+	
+</script>

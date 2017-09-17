@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style type="text/css">
+    #box{
+    	position:relative;
+    	left:100px;
+        width:200px;
+        height:200px;
+        border:1px solid black;
+        
+    }
+    
+    #img01{
+    	width:200px;
+        height:200px;
+    }
+    #meng{
+    	position: absolute;
+    	left:0px;
+    	top:-100000px;
+        width:200px;
+        height:200px;
+        background: rgba(0,0,0,0.5);
+    }
+</style>
+<body>
+	<br/>
+	<br/>
+    <div id="box">
+        <img id="img01" src="img/1.jpg" />
+        <div id="meng"></div>
+    </div>
+    <div id="show"></div>
+</body>
+</html>
+<script type="text/javascript" src="js/jquery-1.8.3.min.js" ></script>
+<script type="text/javascript">
+
+function rightIn(){
+	$("#meng").css({"left":"200px","top":"0px"});
+	$("#meng").animate({"left":"0px","top":"0px"},1000);
+}
+
+function leftIn(){
+	$("#meng").css({"left":"-200px","top":"0px"});
+	$("#meng").animate({"left":"0px","top":"0px"},1000);
+}
+
+
+function topIn(){
+	$("#meng").css({"left":"0px","top":"-200px"});
+	$("#meng").animate({"left":"0px","top":"0px"},1000);
+}
+
+function bottomIn(){
+	$("#meng").css({"left":"0px","top":"200px"});
+	$("#meng").animate({"left":"0px","top":"0px"},1000);
+}
+
+//确定方向
+function getDirection(mousePosition){
+	let left = $("#box").offset().left;
+	let top = $("#box").offset().top;
+	let right = left+$("#box").width();
+	let bottom = top+$("#box").height();
+	//console.log("left="+left+",top="+top+",right="+right+",bottom="+bottom);
+	
+	let leftD = parseInt(Math.abs(left- mousePosition.x));
+	let topD = parseInt(Math.abs(top- mousePosition.y));
+	let rightD = parseInt(Math.abs(right- mousePosition.x));
+	let bottomD = parseInt(Math.abs(bottom- mousePosition.y));
+	
+	//let str  ="leftD="+leftD+",topD="+topD+",rightD="+rightD+",bottomD="+bottomD;
+	//$("#show").html(str);
+	var arr=[leftD,topD,rightD,bottomD];
+	var arrDirection=["左","上","右","下"];
+	var minIndex = 0;//假设第一个元素是最小的
+	for(var i=1;i<arr.length;i++){
+		if(arr[i]<arr[minIndex]){
+			minIndex=i;
+		}
+	}
+	return arrDirection[minIndex];
+}
+
+$(function(){
+	let direction;
+	document.body.onmousemove=function(event){
+		var e = window.event||event;
+		direction = getDirection({"x":e.clientX,"y":e.clientY})
+	}
+	
+	$("#box").mouseenter(function(){
+		switch(direction){
+			case "上":	topIn();break;	
+			case "右":	rightIn();break;	
+			case "下":	bottomIn();break;	
+			case "左":	leftIn();break;	
+		}		
+	});
+	
+});
+
+
+
+	
+</script>
